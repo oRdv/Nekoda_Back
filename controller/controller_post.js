@@ -35,43 +35,32 @@ const getListarPosts = async () => {
 
 const setNovoPost = async (dadosPost, contentType) => {
     try {
+        // Validações
         if (String(contentType).toLowerCase() !== 'application/json') {
-            return message.ERROR_CONTENT_TYPE; // 415
+            return { status_code: 415, message: "Content-Type inválido." };
         }
 
-        let valAutor = await userDAO.selectUserById(dadosPost.user_id);
-
-        if (
-            !dadosPost.title || dadosPost.title.length > 255 || // Verifica se title existe e tem até 255 caracteres
-            !dadosPost.body || // Verifica se body existe
-            !dadosPost.user_id || !valAutor // Verifica se user_id existe e se o usuário associado é válido
-        ) {
-            return message.ERROR_REQUIRED_FIELDS; // 400
+        if (!dadosPost.title || !dadosPost.body || !dadosPost.user_id) {
+            return { status_code: 400, message: "Campos obrigatórios não preenchidos." };
         }
 
         const novoPost = await postDAO.insertPost(dadosPost);
 
         if (novoPost) {
             return {
-                status: message.SUCCESS_CREATED_ITEM.status,
-                status_code: message.SUCCESS_CREATED_ITEM.status_code,
-                message: message.SUCCESS_CREATED_ITEM.message,
-                post: {
-                    id: novoPost.id,
-                    title: novoPost.title,
-                    body: novoPost.body,
-                    user_id: novoPost.user_id,
-                    created_at: novoPost.created_at,
-                },
+                status_code: 201,
+                message: "Post criado com sucesso.",
+                post: novoPost,
             };
         } else {
-            return message.ERROR_INTERNAL_SERVER; // 500
+            return { status_code: 500, message: "Erro ao criar post." };
         }
     } catch (error) {
-        console.error('Erro em setNovoPost:', error);
-        return message.ERROR_INTERNAL_SERVER; // 500
+        console.error("Erro em setNovoPost:", error);
+        return { status_code: 500, message: "Erro interno no servidor." };
     }
 };
+
 
 
 const getBuscarPost = async (id) => {

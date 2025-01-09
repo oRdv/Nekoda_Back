@@ -27,7 +27,7 @@ const insertPost = async (post) => {
         data: {
             title: post.title,
             body: post.body,
-            user_id: post.user_id,
+            user_id: parseInt(post.user_id), 
         },
     });
 };
@@ -53,10 +53,16 @@ const deletePost = async (id) => {
 
 
 const selectLastId = async () => {
-    const lastPost = await prisma.posts.findFirst({
-        orderBy: { id: 'desc' },
-    });
-    return lastPost ? lastPost.id : null;
+    (async () => {
+        try {
+            const id = 1; // Substitua por um ID válido do seu banco de dados
+            const post = await selectPostById(id);
+            console.log(post);
+        } catch (error) {
+            console.error('Erro em selectPostById:', error);
+        }
+    })();
+    
 };
 
 module.exports = {

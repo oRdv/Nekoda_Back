@@ -7,55 +7,68 @@
  * Versão: 1.0
  *****************************************************************************************/
 
-
 const userDAO = require('../model/DAO/user.js');
 const message = require('../modulo/config.js');
 
 const getListarUsers = async () => {
+    let userJSON = {}
+    let dadosUser = await userDAO.selectAllUsers()
 
-    try {
-        const users = await userDAO.selectAllUsers();
-
-        if (users && users.length > 0) {
-            return {
-                status: message.SUCCESS_REQUEST.status,
-                status_code: message.SUCCESS_REQUEST.status_code,
-                users,
-            };
+    if (dadosUser) {
+        if (dadosUser.length > 0) {
+            userJSON.users = dadosUser
+            userJSON.qt = dadosUser.length
+            userJSON.status_code = 200
+            return userJSON
         } else {
-            return message.ERROR_NOT_FOUND;
+            return message.ERROR_NOT_FOUND
         }
-    } catch (error) {
-        console.error('Erro no getListarUsers:', error.message);
-        return message.ERROR_INTERNAL_SERVER;
+    } else {
+        return message.ERROR_INTERNAL_SERVER_DBA
     }
 };
 
 
 const createUser = async (userData, contentType) => {
     try {
+        console.log("Dados recebidos:", userData, "Content-Type:", contentType);
+
         if (!userData || typeof userData !== "object") {
-            console.error("Dados inválidos: userData está vazio ou malformado.");
+            console.error("Erro: Dados inválidos recebidos.");
             return message.ERROR_REQUIRED_FIELDS;
         }
 
         if (String(contentType).toLowerCase() !== "application/json") {
+            console.error("Erro: Content-Type inválido.");
             return message.ERROR_CONTENT_TYPE;
         }
 
         const { name, username, email, password } = userData;
 
         if (!name || !username || !email || !password) {
+            console.error("Erro: Campos obrigatórios ausentes.");
             return message.ERROR_REQUIRED_FIELDS;
         }
 
+        const existingUser = await userDAO.findUserByEmailOrUsername(email, username);
+        console.log("Usuário existente:", existingUser);
+
+        if (existingUser) {
+            console.error("Erro: Usuário já existe.");
+            return message.ERROR_DUPLICATE_ENTRY; // Retorna mensagem de conflito (409)
+        }
+
         const newUser = await userDAO.insertUser(userData);
+        console.log("Usuário inserido:", newUser);
 
         if (newUser) {
             const lastInsertedId = await userDAO.selectLastUserId();
+            console.log("Último ID inserido:", lastInsertedId);
+
             return {
                 status: message.SUCCESS_CREATED_ITEM.status,
                 status_code: message.SUCCESS_CREATED_ITEM.status_code,
+                message: message.SUCCESS_CREATED_ITEM.message,
                 user: {
                     id: lastInsertedId,
                     name,
@@ -64,13 +77,15 @@ const createUser = async (userData, contentType) => {
                 },
             };
         } else {
+            console.error("Erro: Falha ao inserir usuário no banco.");
             return message.ERROR_INTERNAL_SERVER_DBA;
         }
     } catch (error) {
-        console.error(error);
+        console.error("Erro interno no servidor (createUser):", error);
         return message.ERROR_INTERNAL_SERVER;
     }
 };
+
 
 
 const getUserById = async (id) => {
@@ -168,4 +183,6 @@ module.exports = {
     getUserById,
     updateUser,
     deleteUser,
+  
 };
+

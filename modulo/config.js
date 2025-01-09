@@ -49,4 +49,9 @@ module.exports = {
         status_code: 500,
         message: "Erro interno na base de dados.",
     },
+    ERROR_DUPLICATE_ENTRY: {
+        status: false,
+        status_code: 409,
+        message: "E-mail ou nome de usuário já cadastrado.",
+    },
 };
