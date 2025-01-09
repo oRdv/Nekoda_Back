@@ -1,8 +1,8 @@
-# 🚀 Nekoda Backend
+# 🐱 Nekoda Backend
 
 Bem-vindo ao backend do projeto **Nekoda**! 🎉 Este repositório é responsável por gerenciar a lógica do servidor e as operações com o banco de dados para o sistema. Com a ajuda do [Prisma](https://www.prisma.io/), configuramos um ambiente robusto e fácil de usar para lidar com dados.
 
-Siga os passos abaixo para configurar e rodar tudo direitinho. Bora lá? 😉
+Siga os passos abaixo para configurar e rodar tudo direitinho. Vamos lá? 😉
 
 ---
 
